@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="com.ezen.samsikki.mappers.memberMapper">
+ 
+	<!-- 회원 가입 -->
+	<insert id="signup">
+	 	insert into tbl_member(userId, userPass, userName, userPhon, userAddr1, userAddr2, userAddr3, realName, birth)
+	  		values(#{userId}, #{userPass}, #{userName}, #{userPhon}, #{userAddr1}, #{userAddr2}, #{userAddr3}, #{realName}, #{birth}) 
+	</insert>
+	
+	<!-- 로그인 -->
+	<select id="signin" resultType="com.ezen.samsikki.vo.MemberVO">
+		select
+			userId, userName, userPass, userPhon, userAddr1, userAddr2, userAddr3, regDate, verify
+		from
+			tbl_member
+		where userId = #{userId} AND button = 'Y'
+	</select>
+	
+	<!-- 마이페이지(orderList) -->
+	<select id="orderList" resultType="com.ezen.samsikki.vo.OrderVO">
+		select 
+		orderId, userId, orderRec, userAddr1, userAddr2, userAddr3, orderPhon, amount, orderDate, delivery, account
+		from tbl_order
+		where userId = #{userId} AND button = 'Y'
+	
+	</select>
+	
+	<!-- 특정 주문 목록 -->
+	<select id="orderView" resultType="com.ezen.samsikki.vo.OrderListVO">
+		select
+			o.orderId, o.userId, o.orderRec,
+			o.userAddr1, o.userAddr2, o.userAddr3,
+			o.orderPhon, o.amount, o.orderDate, o.delivery,
+			d.orderDetailsNum, d.gdsNum, d.cartStock,
+			g.gdsName, g.gdsThumbImg, g.gdsPrice
+		from tbl_order o
+			inner join tbl_order_details d
+				on o.orderId = d.orderId
+			inner join tbl_goods g
+				on d.gdsNum = g.gdsNum
+		where o.orderId = #{orderId}	
+	</select>
+	
+	<!-- 배송 상태 -->
+	<update id="delivery">
+		update tbl_order
+		set delivery = #{delivery}
+		where orderId = #{orderId}
+	</update>
+	
+	<!-- 마이페이지(memberList) -->
+	<select id ="memberList"  parameterType="String" resultType="com.ezen.samsikki.vo.MemberVO">
+		select 
+			userId, realName, userAddr1, userAddr2, userAddr3, userPhon, birth, userName
+		from tbl_member
+		where userId = #{userId} AND button = 'Y'
+	
+	</select>
+	
+	<!-- QnA 리스트 -->
+	<select id="gdsQnA" resultType="com.ezen.samsikki.vo.BoardVO">
+	 select   b.brdNum,
+	   		  b.brd_Title,
+	   		  b.brd_Content,
+	   		  b.RepDate,
+	   		  m.userName,
+	   		  b.brd_Type,
+	   		  b.secret,
+	   		  m.verify,
+	   		  b.gdsNum
+	    from tbl_board b inner join tbl_member m on b.userId = m.userId
+	    where b.userId = #{userId} 
+	
+	</select>
+	<!-- QnA 상세보기 -->
+	<select	id="QnAView" parameterType="int" resultType="com.ezen.samsikki.vo.BoardVO">
+		select b.brdNum,
+			   b.brd_Title,
+			   b.brd_Content,
+			   m.userName,
+			   b.RepDate,
+			   b.gdsNum
+		from   tbl_board b inner join tbl_member m on b.userId = m.userId
+		where	b.brdNum = #{brdNum} 	   
+	</select>
+	
+	<update id="profileUpdate" parameterType="com.ezen.samsikki.vo.MemberVO">
+			update	tbl_member
+			set		userPass  = #{userPass},
+					userName  = #{userName},
+					userPhon  = #{userPhon},
+					userAddr1 = #{userAddr1},
+					userAddr2 = #{userAddr2},
+					userAddr3 = #{userAddr3}
+			where	userId	  = #{userId}
+	</update>
+	<!-- 회원가입시 이메일검사 -->
+	<select id="emalCheck" resultType="int">
+		select	count(*)
+		from	tbl_member
+		where	userId = #{userId}
+	</select>
+	
+	<!-- 회원탈퇴 -->
+	<update id ="deleteUserId">
+		update tbl_member
+	 	set
+	 		button = 'N'
+	 	where
+	 	 	userId = #{userId}	
+	</update>
+</mapper>

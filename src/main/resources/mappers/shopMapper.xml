@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="com.ezen.samsikki.mappers.shopMapper">
+ 
+	<!-- 상품 리스트 (페이징, 검색) -->
+	<select id="list" resultType="com.ezen.samsikki.vo.GoodsViewVO">
+		<![CDATA[
+		select
+			gdsNum, gdsName, cateCode, gdsPrice, gdsStock, gdsDes, gdsDate, gdsImg, gdsThumbImg,  gdsRate
+		from (
+			  select /*+INDEX_DESC(tbl_goods gdsNum)*/
+				  rownum as rn, gdsNum, gdsName, cateCode, gdsPrice, gdsStock, gdsDes, gdsDate, gdsImg, gdsThumbImg, gdsRate
+			  from tbl_goods
+			  	where rownum <= #{pageNum} * #{amount}
+		]]>    
+		    <if test="keyword != null">
+			    and gdsName like '%' || #{keyword} || '%'
+		    </if>
+		<![CDATA[
+		)
+		where rn > (#{pageNum} -1) * #{amount}	
+		]]>
+	</select>
+	
+	<!-- 상품 리스트 (100, 페이징, 검색) -->
+	<select id="list1" resultType="com.ezen.samsikki.vo.GoodsViewVO">
+		<![CDATA[
+		select
+			gdsNum, gdsName, cateCode, gdsPrice, gdsStock, gdsDes, gdsDate, gdsImg, gdsThumbImg, gdsRate
+		from (
+			  select /*+INDEX_DESC(tbl_goods gdsNum)*/
+				  rownum as rn, gdsNum, gdsName, cateCode, gdsPrice, gdsStock, gdsDes, gdsDate, gdsImg, gdsThumbImg, gdsRate
+			  from tbl_goods
+			  	where cateCode='100' 
+			  		and rownum <= #{pageNum} * #{amount}
+		]]>    
+		    <if test="keyword != null">
+			    and gdsName like '%' || #{keyword} || '%'
+		    </if>
+		<![CDATA[
+		)
+		where rn > (#{pageNum} -1) * #{amount}	
+		]]>
+	</select>
+	
+	<!-- 상품 리스트 (200, 페이징, 검색) -->
+	<select id="list2" resultType="com.ezen.samsikki.vo.GoodsViewVO">
+		<![CDATA[
+		select
+			gdsNum, gdsName, cateCode, gdsPrice, gdsStock, gdsDes, gdsDate, gdsImg, gdsThumbImg, gdsRate
+		from (
+			  select /*+INDEX_DESC(tbl_goods gdsNum)*/
+				  rownum as rn, gdsNum, gdsName, cateCode, gdsPrice, gdsStock, gdsDes, gdsDate, gdsImg, gdsThumbImg, gdsRate
+			  from tbl_goods
+			  	where cateCode='200' 
+			  		and rownum <= #{pageNum} * #{amount}
+		]]>    
+		    <if test="keyword != null">
+			    and gdsName like '%' || #{keyword} || '%'
+		    </if>
+		<![CDATA[
+		)
+		where rn > (#{pageNum} -1) * #{amount}	
+		]]>
+	</select>
+	
+	<!-- 상품 리스트 (300, 페이징, 검색) -->
+	<select id="list3" resultType="com.ezen.samsikki.vo.GoodsViewVO">
+		<![CDATA[
+		select
+			gdsNum, gdsName, cateCode, gdsPrice, gdsStock, gdsDes, gdsDate, gdsImg, gdsThumbImg, gdsRate
+		from (
+			  select /*+INDEX_DESC(tbl_goods gdsNum)*/
+				  rownum as rn, gdsNum, gdsName, cateCode, gdsPrice, gdsStock, gdsDes, gdsDate, gdsImg, gdsThumbImg, gdsRate
+			  from tbl_goods
+			  	where cateCode='300' 
+			  		and rownum <= #{pageNum} * #{amount}
+		]]>    
+		    <if test="keyword != null">
+			    and gdsName like '%' || #{keyword} || '%'
+		    </if>
+		<![CDATA[
+		)
+		where rn > (#{pageNum} -1) * #{amount}	
+		]]>
+	</select>
+	
+	<!-- 상품 리스트 (sale, 페이징, 검색) -->
+	<select id="saleList" resultType="com.ezen.samsikki.vo.GoodsViewVO">
+		<![CDATA[
+		select
+			gdsNum, gdsName, cateCode, gdsPrice, gdsStock, gdsDes, gdsDate, gdsImg, gdsThumbImg, gdsRate
+		from (
+			  select /*+INDEX_DESC(tbl_goods gdsNum)*/
+				  rownum as rn, gdsNum, gdsName, cateCode, gdsPrice, gdsStock, gdsDes, gdsDate, gdsImg, gdsThumbImg, gdsRate
+			  from tbl_goods
+			  	where gdsRate is not null 
+			  		and rownum <= #{pageNum} * #{amount}
+		]]>    
+		    <if test="keyword != null">
+			    and gdsName like '%' || #{keyword} || '%'
+		    </if>
+		<![CDATA[
+		)
+		where rn > (#{pageNum} -1) * #{amount}	
+		]]>
+	</select>
+	
+	
+	
+	<!-- 상품 리스트 개수 -->
+	<select id="listCount" resultType="int">
+		select count(*)
+		from tbl_goods
+		<if test="keyword != null">
+  			where gdsName like '%' || #{keyword} || '%'
+  		</if>
+	</select>
+	
+	<!-- 상품 리스트 개수 (100) -->
+	<select id="listCount1" resultType="int">
+		select count(*)
+		from tbl_goods
+		where cateCode='100'
+		<if test="keyword != null">
+  			where gdsName like '%' || #{keyword} || '%'
+  		</if>
+	</select>
+	
+	<!-- 상품 리스트 개수 (200) -->
+	<select id="listCount2" resultType="int">
+		select count(*)
+		from tbl_goods
+		where cateCode='200'
+		<if test="keyword != null">
+  			where gdsName like '%' || #{keyword} || '%'
+  		</if>
+	</select>
+	
+	<!-- 상품 리스트 개수 (300) -->
+	<select id="listCount3" resultType="int">
+		select count(*)
+		from tbl_goods
+		where cateCode='300'
+		<if test="keyword != null">
+  			where gdsName like '%' || #{keyword} || '%'
+  		</if>
+	</select>
+	
+	<!-- 상품 리스트 개수 (300) -->
+	<select id="saleListCount" resultType="int">
+		select count(*)
+		from tbl_goods
+		where gdsRate is not null
+		<if test="keyword != null">
+  			where gdsName like '%' || #{keyword} || '%'
+  		</if>
+	</select>
+	
+	<!-- 상품 소감(댓글) 작성 -->
+	<insert id="registReply">
+		insert into tbl_reply (gdsNum, userId, repNum, repCon)
+			values (#{gdsNum}, #{userId}, tbl_reply_seq.nextval, #{repCon})
+	</insert>
+	
+	<!-- 상품 소감(댓글) 리스트 -->
+	<select id="replyList" resultType="com.ezen.samsikki.vo.ReplyListVO">
+		select
+			r.gdsNum, r.userId, r.repNum, r.repCon, r.repDate, m.userName
+		from tbl_reply r
+			inner join tbl_member m
+				on r.userId = m.userId
+		where gdsNum = #{gdsNum}
+	</select>
+	
+	<!-- 상품 소감(댓글) 삭제 -->
+	<delete id="deleteReply">
+		delete tbl_reply
+		where repNum = #{repNum}
+			and userId = #{userId}
+	</delete>
+	
+	<!-- 아이디 체크 -->
+	<select id="replyUserIdCheck" resultType="String">
+		select userId
+		from tbl_reply
+		where repNum = #{repNum}
+	</select>
+	
+	<!-- 상품 소감(댓글) 수정 -->
+	<update id="modifyReply">
+		update tbl_reply
+	 	set
+	 		repCon = #{repCon}
+	 	where repNum = #{repNum}
+	 		and userId = #{userId}	
+	</update>
+	
+	<!-- 카드 담기 -->
+	<insert id="addCart">
+		insert into tbl_cart (cartNum, userId, gdsNum, cartStock)
+			values (tbl_cart_seq.nextval, #{userId}, #{gdsNum}, #{cartStock})
+	</insert>
+	
+	<!-- 카트 리스트 -->
+	<select id="cartList" resultType="com.ezen.samsikki.vo.CartListVO">
+		select
+			row_number() over(order by c.cartNum desc) as num,
+			c.cartNum, c.userId, c.gdsNum, c.cartStock, c.addDate,
+			g.gdsName, g.gdsPrice, g.gdsThumbImg, g.gdsRate
+		from tbl_cart c
+			inner join tbl_goods g
+				on c.gdsNum = g.gdsNum
+		where c.userId = #{userId}	
+	</select>
+	 
+	 <!-- 카트 삭제 -->
+	 <delete id="deleteCart">
+		 delete tbl_cart
+		 where cartNum = #{cartNum}
+		 	and userId = #{userId} 
+	 </delete>
+	 
+	<!-- 주문 정보 -->
+	<insert id="orderInfo">
+		insert into tbl_order(orderId, userId, orderRec, userAddr1, userAddr2, userAddr3, orderPhon, amount, account)
+			values(#{orderId}, #{userId}, #{orderRec}, #{userAddr1}, #{userAddr2}, #{userAddr3}, #{orderPhon}, #{amount}, #{account})
+	</insert>
+	 
+	 <!-- 주문수 판매량 증가 -->
+	 <update id="salesRatePlus">
+	 	update tbl_goods
+	 	set    salesRate = salesRate + 1 
+	 	where  gdsNum = #{gdsNum}
+	 </update>
+	 
+	<!-- 주문 상세 정보 -->
+	<insert id="orderInfo_Details">
+		insert into tbl_order_details(orderDetailsNum, orderId, gdsNum, cartStock)
+		select tbl_order_details_seq.nextval, #{orderId}, gdsNum, cartStock
+		from tbl_cart
+	</insert>
+	 
+	<!-- 카트 비우기 -->
+	<delete id="cartAllDelete">
+		delete tbl_cart
+		where userId = #{userId}
+	</delete> 
+	 
+	<!-- 특정 유저의 주문목록 -->
+	<select id="orderList" resultType="com.ezen.samsikki.vo.OrderVO">
+		select
+	   		orderId, userId, orderRec, userAddr1, userAddr2, userAddr3, orderPhon, amount, orderDate, delivery, account
+		from tbl_order
+		where userId = #{userId}
+	</select>
+	
+
+	
+	<!-- 특정 주문 목록 -->
+	<select id="orderView" resultType="com.ezen.samsikki.vo.OrderListVO">
+		select o.orderId, o.userId, o.orderRec, o.userAddr1, o.userAddr2, o.userAddr3, o.orderPhon, o.amount, o.orderDate, o.delivery,
+			d.orderDetailsNum, d.gdsNum, d.cartStock,
+			g.gdsName, g.gdsThumbImg, g.gdsPrice, o.account, g.gdsRate
+		from tbl_order o
+			inner join tbl_order_details d
+				on o.orderId = d.orderId
+			inner join tbl_goods g
+				on d.gdsNum = g.gdsNum
+		where o.userId = #{userId}
+			and o.orderId = #{orderId}
+	</select>
+
+<!-- QnA 리스트 -->
+<select id="gdsQnA" resultType="com.ezen.samsikki.vo.BoardVO">
+ select   b.brdNum,
+   		  b.brd_Title,
+   		  b.brd_Content,
+   		  b.RepDate,
+   		  m.userName,
+   		  b.brd_Type,
+   		  b.secret,
+   		  m.verify,
+   		  b.gdsNum
+    from tbl_board b inner join tbl_member m on b.userId = m.userId
+    where gdsNum = #{gdsNum}
+
+</select>
+<!-- QnA 상세보기 -->
+<select	id="QnAView" parameterType="int" resultType="com.ezen.samsikki.vo.BoardVO">
+	select b.brdNum,
+		   b.brd_Title,
+		   b.brd_Content,
+		   m.userName,
+		   b.RepDate,
+		   b.gdsNum
+	from   tbl_board b inner join tbl_member m on b.userId = m.userId
+	where	b.brdNum = #{brdNum} 	   
+</select>
+
+<!-- 비밀글 아이디체크 -->
+<select id="secretUserIdCheck" resultType="String">
+	select userId
+	from tbl_board
+	where brdNum = #{brdNum}
+
+</select>
+ 
+ 
+ <!-- QnA 수정 -->
+<update id="QnAUpdate" parameterType="com.ezen.samsikki.vo.BoardVO">
+	update tbl_board
+	set brd_Title = #{brd_Title},
+		brd_Content = #{brd_Content}
+	where brdNum = #{brdNum}
+</update>
+
+<!-- QnA 삭제 -->
+<delete id="QnADelete" parameterType="int">
+	Delete
+	From tbl_board
+	Where brdNum = #{brdNum}
+</delete>
+ 
+<!-- QnA(댓글) 작성 -->
+<insert id="QnAregistReply">
+insert into QnA_reply (brdNum, userId, repNum, repCon)
+		values (#{brdNum}, #{userId}, tbl_reply_seq.nextval, #{repCon})
+</insert>
+ <!-- QnA(댓글) 리스트 -->
+ <select id="QnAReplyList" resultType="com.ezen.samsikki.vo.QnAReplyListVO">
+ 	select
+ 		r.brdNum, r.userId, r.repNum, r.repCon, r.repDate, m.userName
+ 	from QnA_reply r
+ 		inner join tbl_member m
+ 			on r.userId = m.userId
+ 		where brdNum = #{brdNum}		
+ 
+ </select>
+ 
+ <!-- QnA(댓글)삭제 -->
+ <delete id="QnAdeleteReply">
+ 	delete QnA_reply
+ 		where repNum = #{repNum}
+ 		and userId = #{userId}
+ </delete>
+ <!-- QnA댓글 아이디체크 -->
+ <select id="QnAreplyuserIdCheck" resultType="String">
+ select userId 
+ from QnA_reply
+ where repNum = #{repNum}
+ </select>
+ 
+ <!-- QnA(댓글) 수정 -->
+ <update id="QnAmodifyReply">
+ update QnA_reply
+ set 
+ 	repCon = #{repCon}
+ where repNum = #{repNum}
+ and userId = #{userId}
+ </update>
+
+<!-- QnA 디테일 상품이름 추가 -->
+<select id ="QnAgoodsTitle" resultType="com.ezen.samsikki.vo.GoodsVO">
+	select gdsName 
+	from tbl_goods
+	where gdsNum = #{gdsNum}
+</select>
+ 
+</mapper>

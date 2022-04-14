@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ezen.samsikki.mappers.adminMapper">
+  	
+	<!-- 상품 등록 -->
+	<insert id="register">
+	 	insert into tbl_goods (gdsNum, gdsName, cateCode, gdsPrice, gdsStock, gdsDes, gdsImg, gdsThumbImg, gdsRate)
+	  		values (tbl_goods_seq.nextval, #{gdsName}, #{cateCode}, #{gdsPrice}, #{gdsStock}, #{gdsDes}, #{gdsImg}, #{gdsThumbImg}, #{gdsRate})
+	</insert>
+	
+	<!-- 상품 목록 (페이징, 검색) -->
+	<select id="goodsListPaging" resultType="com.ezen.samsikki.vo.GoodsViewVO">
+		<![CDATA[
+			select gdsNum, gdsName, cateCode, gdsPrice, gdsStock, gdsDes, gdsDate, gdsImg, gdsThumbImg, gdsRate
+			from (
+				 select /*+INDEX_DESC(tbl_goods gdsNum)*/
+				 	rownum as rn, gdsNum, gdsName, cateCode, gdsPrice, gdsStock, gdsDes, gdsDate, gdsImg, gdsThumbImg, gdsRate
+				 from tbl_goods
+				 where rownum <= #{pageNum} * #{amount}
+		]]>
+		<if test="keyword != null">
+			    and gdsName like '%' || #{keyword} || '%'
+		    </if>
+		<![CDATA[
+			)
+			where rn > (#{pageNum} -1) * #{amount}	
+		]]>	
+	</select>
+	
+	<!-- 상품 목록 개수 -->
+	<select id="getCount" resultType="int">
+		select count(*)
+		from tbl_goods
+	</select>
+
+	<!-- 상품조회 -->
+	<select id="goodsView" resultType="com.ezen.samsikki.vo.GoodsViewVO">
+		select gdsNum, gdsName, cateCode, gdsPrice, gdsStock, gdsDes, gdsDate, gdsImg, gdsThumbImg, gdsRate
+		from tbl_goods
+		where gdsNum = #{gdsNum}
+	</select>
+	
+	<!-- 상품 수정 -->
+	<update id="goodsModify">
+		update tbl_goods
+		set
+	        gdsName = #{gdsName},
+	        cateCode = #{cateCode},
+	        gdsPrice = #{gdsPrice},
+	        gdsStock = #{gdsStock},
+	        gdsDes = #{gdsDes},
+	        gdsImg = #{gdsImg},
+	        gdsThumbImg = #{gdsThumbImg},
+	        gdsRate = #{gdsRate}
+		where gdsNum = ${gdsNum}
+	</update>
+	
+	<!-- 모든 유저의 주문 목록 -->
+	<select id="orderList" resultType="com.ezen.samsikki.vo.OrderVO">
+		select 
+			orderId, userId, orderRec,
+			userAddr1, userAddr2, userAddr3,
+			orderPhon, amount, orderDate, delivery
+		from tbl_order
+	</select>
+	
+	<!-- 특정 주문 목록 -->
+	<select id="orderView" resultType="com.ezen.samsikki.vo.OrderListVO">
+		select
+			o.orderId, o.userId, o.orderRec,
+			o.userAddr1, o.userAddr2, o.userAddr3,
+			o.orderPhon, o.amount, o.orderDate, o.delivery,
+			d.orderDetailsNum, d.gdsNum, d.cartStock,
+			g.gdsName, g.gdsThumbImg, g.gdsPrice, g.gdsRate
+		from tbl_order o
+			inner join tbl_order_details d
+				on o.orderId = d.orderId
+			inner join tbl_goods g
+				on d.gdsNum = g.gdsNum
+		where o.orderId = #{orderId}	
+	</select>
+	
+	<!-- 상품 삭제 -->
+	<delete id="goodsDelete">
+		delete
+			tbl_goods
+		where gdsNum = #{gdsNum}
+	</delete>
+	
+	<!-- 배송 상태 -->
+	<update id="delivery">
+		update tbl_order
+		set delivery = #{delivery}
+		where orderId = #{orderId}
+	</update>
+	
+	<!-- 상품 수량 조절 -->
+	<update id="changeStock">
+		update tbl_goods
+		set gdsStock = gdsStock - #{gdsStock}
+		where gdsNum = #{gdsNum}
+	</update>
+	
+	<!-- 모든 소감(댓글) -->
+	<select id="allReply" resultType="com.ezen.samsikki.vo.ReplyListVO">
+		select
+			r.gdsNum, r.userId, r.repNum, r.repCon, r.repDate,
+			m.userName
+		from tbl_reply r
+			inner join tbl_member m
+				on r.userId = m.userId	
+	</select>
+	
+	<!-- 소감(댓글) 지우기 -->
+	<delete id="deleteReply">
+		delete tbl_reply
+		where repNum = #{repNum}
+	</delete>
+	
+	<!-- 배송 완료 주문 삭제 -->
+	<delete id="deleteOrder">
+		delete tbl_order
+		where orderId = #{orderId}
+	</delete>
+
+	<!-- 공지사항 -->
+<insert id ="notice">
+insert into tbl_Board (BrdNum ,Brd_title, Brd_content, brd_viewCnt, userId, brd_type)
+		values ( tbl_board_seq.nextval ,#{brd_Title}, #{brd_Content},  #{viewCnt}, #{userId}, #{brd_type})
+</insert>
+
+<!-- 공지사항 list -->
+<select id="noticeList" resultType="com.ezen.samsikki.vo.BoardVO" parameterType="com.ezen.samsikki.vo.SearchCriteria">
+   select brdNum,
+   		  brd_Title,
+   		  brd_Content,
+   		  RepDate,
+   		  userName,
+   		  brd_type
+    from ( select b.BrdNum,
+    	          b.brd_Title,
+    	          b.brd_Content, 
+    	          b.RepDate, 
+    	          m.userName,
+    	          b.brd_type,
+       			 Row_number() over(order by b.BrdNum DESC) as rNum
+        from tbl_board b inner join tbl_member m on b.userId = m.userId
+        where 1=1 AND brd_type = 1
+        	<include refid="search"></include>
+        ) tbl
+        where rNum between #{rowStart} and #{rowEnd}
+        order by BrdNum DESC
+
+</select>
+
+<!-- 공지사항 갯수 (paging용)  -->
+<select id="listCount" resultType="int">
+
+	Select Count(BrdNum)
+	FROM tbl_board
+	WHERE 1=1
+	<include refid="search"></include>
+	AND BrdNum > 0
+
+</select>
+
+<sql id ="search">
+	<if test="searchType != null">
+		<if test="searchType == 't'.toString()">AND BRD_TITLE LIKE '%' || #{keyword} || '%'</if>
+		<if test="searchType == 'c'.toString()">AND BRD_CONTENT LIKE '%' || #{keyword} || '%'</if>
+		<if test="searchType == 'u'.toString()">AND USERNAME LIKE '%' || #{keyword} || '%'</if>
+		<if test="searchType == 'tc'.toString()">AND (BRD_TITLE LIKE '%' || #{keyword} || '%') or (BRD_CONTENT LIKE '%' || #{keyword} || '%')</if>
+	</if>
+</sql>
+
+<!-- 공지사항 조회 -->
+<select	id="noticeView" parameterType="int" resultType="com.ezen.samsikki.vo.BoardVO">
+	select b.brdNum,
+		   b.brd_Title,
+		   b.brd_Content,
+		   m.userName,
+		   b.RepDate
+	from   tbl_board b inner join tbl_member m on b.userId = m.userId
+	where	b.brdNum = #{brdNum} 	   
+</select>
+
+<!-- 공지사항 수정 -->
+<update id="noticeUpdate" parameterType="com.ezen.samsikki.vo.BoardVO">
+	update tbl_board
+	set brd_Title = #{brd_Title},
+		brd_Content = #{brd_Content}
+	where brdNum = #{brdNum}
+</update>
+
+<!-- 공지사항 삭제 -->
+<delete id="noticeDelete" parameterType="int">
+	Delete
+	From tbl_board
+	Where brdNum = #{brdNum}
+</delete>
+
+<!-- 유저목록 -->
+<select id="memberList" resultType="com.ezen.samsikki.vo.MemberVO">
+	select userId,
+		   realName,
+		   regDate,
+		   userPhon,
+		   userAddr3
+	from   tbl_member	   
+	where  button = 'Y'
+</select>
+
+<!-- 탈퇴유저목록 -->
+<select id="deleteMemberList" resultType="com.ezen.samsikki.vo.MemberVO">
+	select userId,
+		   realName,
+		   regDate,
+		   userPhon,
+		   userAddr3
+	from   tbl_member	   
+	where  button = 'N'
+</select>
+
+<!-- 탈퇴회원삭제 -->
+<delete id="memberDelete" parameterType="String">
+{CALL declare
+BEGIN
+delete tbl_reply
+where userId=#{userId};
+delete tbl_cart
+where userId=#{userId};
+delete tbl_order
+where userId=#{userId};
+delete tbl_board
+where userId=#{userId};
+delete tbl_member
+where userId=#{userId};
+END
+}
+</delete>
+
+</mapper>
